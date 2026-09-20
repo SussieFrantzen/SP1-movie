@@ -1,0 +1,195 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+' ******* ENTITIES ***********
+
+class Movie {
+    - id: int
+    - mdbId: int
+    - movieTitle: String
+    - overview: String
+    - releaseDate: LocalDate
+    - rating: Double
+    - popularity: Double
+}
+
+class Actor {
+    - id: int
+    - mdbId: int
+    - name: String
+}
+
+class Director {
+    - id: int
+    - mdbId: int
+    - name: String
+}
+
+class Genre {
+    - id: int
+    - mdbId: int
+    - name: String
+}
+
+
+' ********** DTOs ************
+
+class MovieDTO {
+    - id: int
+    - mdbId: int;
+    - movieTitle: String
+    - overview: String
+    - releaseDate: LocalDate
+    - rating: Double
+    - popularity: Double
+    - actors: List<ActorDTO>
+    - director: DirectorDTO
+    - genres: List<GenreDTO>
+}
+
+class ActorDTO {
+    - id: int
+    - name: String
+}
+
+class DirectorDTO {
+    - id: int
+    - name: String
+}
+
+class GenreDTO {
+    - id: int
+    - name: String
+}
+
+' DAO
+
+interface DAO<T> {
+    + create(entity: T): T
+    + findById(id: int): T
+    + findAll(): List<T>
+    + update(entity: T): T
+    + remove(id: int): void
+}
+
+
+interface MovieDAO {
+    + findByTitle(title: String): List<Movie>
+    + findByGenre(genreId: int): List<Movie>
+    + getAverageRating(): Double
+    + getTop10Rated(): List<Movie>
+    + getBottom10Rated(): List<Movie>
+    + getTop10Popular(): List<Movie>
+}
+
+interface ActorDAO{
++ Actor findByMdbId(int (int mdbId)
+}
+
+interface DirectorDAO{
++ Director findByMdbId(int mdbId)
+}
+
+interface GenreDAO {
+    + findMoviesByGenre(genreId: int): List<Movie>
+}
+
+' *********** SERVICES *************
+
+class MovieService {
+    + createMovie(dto: MovieDTO): MovieDTO
+    + getMovie(id: int): MovieDTO
+    + getAllMovies(): List<MovieDTO>
+    + updateMovie(dto: MovieDTO): MovieDTO
+    + removeMovie(id: int): void
+    + searchByTitle(title: String): List<MovieDTO>
+    + getMoviesByGenre(genreId: int): List<MovieDTO>
+    + getAverageRating(): Double
+    + getTop10Rated(): List<MovieDTO>
+    + getBottom10Rated(): List<MovieDTO>
+    + getTop10Popular(): List<MovieDTO>
+}
+
+class ActorService {
+    + createActor(dto: ActorDTO): ActorDTO
+    + getActor(id: int): ActorDTO
+    + getAllActors(): List<ActorDTO>
+    + updateActor(dto: ActorDTO): ActorDTO
+    + removeActor(id: int): void
+}
+
+class DirectorService {
+    + createDirector(dto: DirectorDTO): DirectorDTO
+    + getDirector(id: int): DirectorDTO
+    + getAllDirectors(): List<DirectorDTO>
+    + updateDirector(dto: DirectorDTO): DirectorDTO
+    + removeDirector(id: int): void
+}
+
+class GenreService {
+    + createGenre(dto: GenreDTO): GenreDTO
+    + getGenre(id: int): GenreDTO
+    + getAllGenres(): List<GenreDTO>
+    + updateGenre(dto: GenreDTO): GenreDTO
+    + removeGenre(id: int): void
+    + getMoviesByGenre(id: int): List<MovieDTO>
+}
+
+' *********** MDB ******************
+
+class MdbClient {
+    + getMovies(): List<MovieDTO>
+    + getMovieDetails(id: int): MovieDTO
+    + getActors(id: int): List<ActorDTO>
+    + getDirector(id: int): DirectorDTO
+    + getGenres(id: int): List<GenreDTO>
+}
+
+class MdbImportService {
+    + importMovies(): void
+}
+
+
+'********** RELATIONS ***********
+
+Movie "0..*" -- "0..*" Actor
+Movie "0..*" -- "0..*" Genre
+Movie "0..*" --> "1" Director
+
+
+MovieDTO "0..*" -- "0..*" ActorDTO
+MovieDTO "0..*" -- "0..*" GenreDTO
+MovieDTO "0..*" --> "1" DirectorDTO
+
+
+
+DAO <|-- MovieDAO
+DAO <|-- ActorDAO
+DAO <|-- DirectorDAO
+DAO <|-- GenreDAO
+
+MovieService --> MovieDAO
+ActorService ---> ActorDAO
+DirectorService --> DirectorDAO
+GenreService --> GenreDAO
+
+
+MovieService ..> MovieDTO
+ActorService ..> ActorDTO
+DirectorService ..> DirectorDTO
+GenreService ..> GenreDTO
+
+MovieService ..> Movie
+ActorService ..> Actor
+DirectorService ..> Director
+GenreService ..> Genre
+
+MdbImportService -up-> MdbClient
+MdbImportService -right-> MovieService
+MdbImportService -down-> ActorService
+MdbImportService -left-> DirectorService
+MdbImportService -left-> GenreService
+
+
+@enduml

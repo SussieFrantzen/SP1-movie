@@ -1,0 +1,453 @@
+I try to use some from the school have show but that fail so here it ends up:
+
+    public MdbClient() {
+
+        this.httpClient = HttpClient.newHttpClient();
+        this.objectMapper = new ObjectMapper();
+
+        String apiKey = System.getenv("api_key");
+
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException(
+                    "API_KEY is not configured"
+            );
+        }
+
+        this.apiKey = apiKey;
+    }
+
+    private JsonNode get(String url) {
+
+        String separator = url.contains("?") ? "&" : "?";
+
+        String finalUrl =
+                url + separator + "api_key=" + apiKey;
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(finalUrl))
+                .header("accept", "application/json")
+                .GET()
+                .build();
+
+        try {
+
+            HttpResponse<String> response =
+                    httpClient.send(
+                            request,
+                            HttpResponse.BodyHandlers.ofString()
+                    );
+
+            if (response.statusCode() != 200) {
+                throw new RuntimeException(
+                        "TMDb request failed: "
+                                + response.statusCode()
+                                + " - "
+                                + response.body()
+                );
+            }
+
+            return objectMapper.readTree(response.body());
+
+        } catch (IOException | InterruptedException e) {
+
+            throw new RuntimeException(
+                    "Could not call TMDb API",
+                    e
+            );
+        }
+
+
+
+
+
+
+
+
+
+
+
+     */
+
+    /*
+
+    private JsonNode get(String url) {
+
+        String separator = url.contains("?") ? "&" : "?";
+
+        String finalUrl =
+                url + separator + "api_key=" + apiKey;
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(finalUrl))
+                .header("accept", "application/json")
+                .GET()
+                .build();
+
+        try {
+
+            HttpResponse<String> response =
+                    httpClient.send(
+                            request,
+                            HttpResponse.BodyHandlers.ofString()
+                    );
+
+            if (response.statusCode() != 200) {
+                throw new RuntimeException(
+                        "TMDb request failed: "
+                                + response.statusCode()
+                                + " - "
+                                + response.body()
+                );
+            }
+
+            return objectMapper.readTree(response.body());
+
+        } catch (IOException | InterruptedException e) {
+
+            throw new RuntimeException(
+                    "Could not call TMDb API",
+                    e
+            );
+        }
+    }
+
+
+    public MdbClient() {
+
+        this.httpClient = HttpClient.newHttpClient();
+        this.objectMapper = new ObjectMapper();
+
+        String apiKey = System.getenv("api_key");
+
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException(
+                    "API_KEY is not configured"
+            );
+        }
+
+        this.apiKey = apiKey;
+    }
+
+    public JsonNode readAPI(String url) {
+
+        String separator = url.contains("?") ? "&" : "?";
+
+        String finalUrl =
+                url + separator + "api_key=" + apiKey;
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(finalUrl))
+                .header("accept", "application/json")
+                .GET()
+                .build();
+
+        try {
+
+            HttpResponse<String> response =
+                    httpClient.send(
+                            request,
+                            HttpResponse.BodyHandlers.ofString()
+                    );
+
+            if (response.statusCode() != 200) {
+                throw new RuntimeException(
+                        "TMDb request failed: "
+                                + response.statusCode()
+                                + " - "
+                                + response.body()
+                );
+            }
+
+            return objectMapper.readTree(response.body());
+
+        } catch (IOException | InterruptedException e) {
+
+            throw new RuntimeException(
+                    "Could not call TMDb API",
+                    e
+            );
+        }
+    }
+
+    public <T> T getWithJacksonGeneric(String url, Class<T> tClass) {
+
+        JsonNode node = readAPI(url);
+
+        try {
+            return objectMapper.treeToValue(node, tClass);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+
+    */
+/*
+
+    public JsonNode readAPI(String url){
+
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            // Create a request
+
+            String separator = url.contains("?") ? "&" : "?";
+            String finalUrl = url + separator + "api_key=" + apiKey;
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(url))
+                    .GET()
+                    .build();
+            // Send the request and get the response
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            // Check the status code and print the response
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("GET request failed. Status code: " + response.statusCode());
+            }
+            return objectMapper.readTree(response.body());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public MovieDTO convertFromJoson(String json){
+        try {
+            MovieDTO[] cityDTOs = objectMapper.readValue(json, MovieDTO[].class);
+            return cityDTOs[0];
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public MovieDTO getWithJackson(String url){
+        try {
+            JsonNode node = objectMapper.readTree(new URI(url).toURL());
+            return objectMapper.treeToValue(node, MovieDTO[].class)[0];
+        } catch (URISyntaxException | IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public <T> T getWithJacksonGeneric(String url, Class<T> tClass){
+        try {
+            JsonNode node = objectMapper.readTree(new URI(url).toURL());
+            return objectMapper.treeToValue(node, tClass);
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+/*
+    public List<MovieDTO> getMovies() {  // this metode take only the 5 years back og danish movies so the database only get them
+        LocalDate today = LocalDate.now();
+        LocalDate fiveYearsAgo = today.minusYears(5);
+
+        String url = Movie_URL +
+                "/discover/movie" +
+                "?with_origin_country=DK" +
+                "&primary_release_date.gte=" + fiveYearsAgo +
+                "&primary_release_date.lte=" + today +
+                "&language=en-US" +
+                "&sort_by=popularity.desc" +
+                "&page=1";
+
+        JsonNode root = readAPI(url);
+
+        List<MovieDTO> movies = new ArrayList<>();
+
+        for (JsonNode node : root.get("results")) {
+
+            MovieDTO movie = new MovieDTO();
+
+            movie.setMdbId(node.get("id").asInt());
+            movie.setMovieTitle(node.get("title").asText());
+            movie.setOverview(node.get("overview").asText());
+            movie.setPopularity(node.get("popularity").asDouble());
+            movie.setRating(node.get("vote_average").asDouble());
+
+            String releaseDate =
+                    node.get("release_date").asText();
+
+            if (!releaseDate.isEmpty()) {
+                movie.setReleaseDate(
+                        LocalDate.parse(releaseDate)
+                );
+            }
+
+            movies.add(movie);
+        }
+
+        return movies;
+    }
+
+
+public List<MovieDTO> getMovies() {
+
+    LocalDate today = LocalDate.now();
+    LocalDate fiveYearsAgo = today.minusYears(5);
+
+    String url = Movie_URL +
+            "/discover/movie" +
+            "?with_origin_country=DK" +
+            "&primary_release_date.gte=" + fiveYearsAgo +
+            "&primary_release_date.lte=" + today +
+            "&language=en-US" +
+            "&sort_by=popularity.desc" +
+            "&page=1";
+
+    JsonNode root = readAPI(url);
+
+    List<MovieDTO> movies = new ArrayList<>();
+
+    for (JsonNode node : root.get("results")) {
+
+        MovieDTO movie = new MovieDTO();
+
+        movie.setMdbId(node.get("id").asInt());
+        movie.setMovieTitle(node.get("title").asText());
+        movie.setOverview(node.get("overview").asText());
+        movie.setPopularity(node.get("popularity").asDouble());
+        movie.setRating(node.get("vote_average").asDouble());
+
+        String releaseDate =
+                node.get("release_date").asText();
+
+        if (!releaseDate.isEmpty()) {
+            movie.setReleaseDate(
+                    LocalDate.parse(releaseDate)
+            );
+        }
+
+        movies.add(movie);
+    }
+
+    return movies;
+}
+   /*
+    public MovieDTO getMovieDetails(int id) {
+
+        String url =
+                Movie_URL +
+                        "/movie/" +
+                        id +
+                        "?language=en-US";
+
+        JsonNode node = readAPI(url);
+
+        MovieDTO movie = new MovieDTO();
+
+        movie.setMdbId(node.get("id").asInt());
+        movie.setMovieTitle(node.get("title").asText());
+        movie.setOverview(node.get("overview").asText());
+        movie.setPopularity(node.get("popularity").asDouble());
+        movie.setRating(node.get("vote_average").asDouble());
+
+        String releaseDate =
+                node.get("release_date").asText();
+
+        if (!releaseDate.isEmpty()) {
+            movie.setReleaseDate(
+                    LocalDate.parse(releaseDate)
+            );
+        }
+
+        return movie;
+    }
+
+
+    */
+/*
+
+    public MovieDTO getMovieDetails(int id) {
+
+        String url =
+                Movie_URL +
+                        "/movie/" +
+                        id +
+                        "?language=en-US";
+
+        return getWithJacksonGeneric(url, MovieDTO.class);
+    }
+
+
+
+    public List<ActorDTO> getActors(int id) {
+
+        String url =
+                Movie_URL +
+                        "/movie/" +
+                        id +
+                        "/credits?language=en-US";
+
+        JsonNode root = readAPI(url);
+
+        List<ActorDTO> actors = new ArrayList<>();
+
+        for (JsonNode node : root.get("cast")) {
+
+            ActorDTO actor = new ActorDTO();
+
+            actor.setMdbId(node.get("id").asInt());
+            actor.setName(node.get("name").asText());
+
+            actors.add(actor);
+        }
+
+        return actors;
+    }
+
+    public DirectorDTO getDirector(int id) {
+
+        String url =
+                Movie_URL +
+                        "/movie/" +
+                        id +
+                        "/credits?language=en-US";
+
+        JsonNode root = readAPI(url);
+
+        for (JsonNode node : root.get("crew")) {
+
+            if ("Director".equals(node.get("job").asText())) {
+
+                DirectorDTO director = new DirectorDTO();
+
+                director.setMdbId(node.get("id").asInt());
+                director.setName(node.get("name").asText());
+
+                return director;
+            }
+        }
+
+        return null;
+    }
+
+    public List<GenreDTO> getGenres(int id) {
+
+        String url =
+                Movie_URL +
+                        "/movie/" +
+                        id +
+                        "?language=en-US";
+
+        JsonNode root = readAPI(url);
+
+        List<GenreDTO> genres = new ArrayList<>();
+
+        for (JsonNode node : root.get("genres")) {
+
+            GenreDTO genre = new GenreDTO();
+
+            genre.setMdbId(node.get("id").asInt());
+            genre.setName(node.get("name").asText());
+
+            genres.add(genre);
+        }
+
+        return genres;
+    }
+}
+*/
